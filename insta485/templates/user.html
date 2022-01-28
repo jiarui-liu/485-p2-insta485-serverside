@@ -1,0 +1,32 @@
+{% extends "index.html" %}
+{% block body %}
+<p class="subName">{{ username }}</p>
+{% if (logname != username) and (not logname_follows_username) %}
+<p style="font-size: 20px">not following</p>
+{% elif (logname != username) and (logname_follows_username) %}
+<p style="font-size: 20px">following</p>
+{% endif %}
+<p style="font-size: 20px">
+    {% if total_posts == 1 %}
+    {{ "{} post".format(total_posts) }}
+    {% else %}
+    {{ "{} posts".format(total_posts) }}
+    {% endif %}
+    <a href={{ "/users/{}/followers/" .format(username) }}><b>
+            {% if followers == 1 %}
+            {{ "{} follower".format(followers) }}
+            {% else %}
+            {{ "{} followers".format(followers) }}
+            {% endif %}
+        </b></a>
+    <a href={{ "/users/{}/following/" .format(username) }}><b>{{ "{} following".format(following) }}</b></a>
+</p>
+<p style="font-size: 20px">{{ fullname }}</p>
+
+<div>
+    {% for post in posts %}
+    <a href={{ "/posts/{}/" .format(post.postid) }} class="horizontal"><img alt="left" src="{{ post.img_url }}"
+            style="width: 48%" /></a>
+    {% endfor %}
+</div>
+{% endblock %}

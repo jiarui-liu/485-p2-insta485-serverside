@@ -1,0 +1,39 @@
+{% extends "index.html" %} {% block body %}
+<div class="myDivSubBody">
+    <ul class="head">
+        <li class="leftAlignHead" style="
+              font-family: Comic Sans MS, Comic Sans, cursive;
+              font-size: 25px;
+            ">
+            <ul class="head">
+                <li class="leftAlignHead">
+                    <a href="{{ "/users/{}/".format(owner) }}"><img alt="{{ owner }}"
+                            src="{{ owner_img_url }}" width="40" /></a>
+                </li>
+                <li class="leftAlignHead">
+                    <a href="{{ "/users/{}/".format(owner) }}">{{ owner }}</a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="rightSubAlign"><a href="{{ "/posts/{}/".format(postid) }}">{{ timestamp }}</a>
+        </li>
+    </ul>
+    <img alt="{{ owner }}" src="{{ img_url }}" style="width: 100%" />
+    <p style="font-size: 20px; padding: 5px">
+        {% if likes == 1 %}
+        {{ "{} like".format(likes) }}
+        {% else %}
+        {{ "{} likes".format(likes) }}
+        {% endif %}
+    </p>
+    <ul class="main">
+        {% for comment in comments %}
+        <li class="comment">
+            <b><a href="{{ "/users/{}/".format(comment.owner) }}">{{ comment.owner }}</a></b> {{
+            comment.text }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

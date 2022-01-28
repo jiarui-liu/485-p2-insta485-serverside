@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# insta485db
+#
+# 
+
+set -Eeuo pipefail
+# set -x
+
+if (( $# == 0 )); then
+    echo "Usage: $0 (create|destroy|reset|dump)"
+    exit 
+else
+    if [ "$1" == "create" ]; then
+        mkdir -p var/uploads
+        sqlite3 var/insta485.sqlite3 < sql/schema.sql
+        sqlite3 var/insta485.sqlite3 < sql/data.sql
+        cp sql/uploads/* var/uploads/
+    fi
+fi
+

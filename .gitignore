@@ -62,6 +62,7 @@ files_for_autograder_io/
 .vscode
 .ropeproject/
 .vscode/
+.history/
 
 # macOS system files
 *.DS_Store

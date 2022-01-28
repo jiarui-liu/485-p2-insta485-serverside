@@ -36,7 +36,7 @@ CREATE TABLE comments(
     FOREIGN KEY(owner) REFERENCES users(username) ON DELETE CASCADE,
     postid int NOT NULL,
     FOREIGN KEY(postid) REFERENCES posts(postid),
-    text VARCHAR(1024),
+    text VARCHAR(1024) NOT NULL,
     created DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 

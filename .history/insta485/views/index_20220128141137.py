@@ -5,8 +5,6 @@ URLs include:
 """
 import flask
 import insta485
-
-
 @insta485.app.route('/')
 def show_index():
     """Display / route."""
@@ -21,6 +19,7 @@ def show_index():
         (logname, )
     )
     users = cur.fetchall()
+    print
     # Add database info to context
     context = {"users": users}
     return flask.render_template("index.html", **context)

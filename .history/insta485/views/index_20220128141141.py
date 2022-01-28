@@ -5,8 +5,6 @@ URLs include:
 """
 import flask
 import insta485
-
-
 @insta485.app.route('/')
 def show_index():
     """Display / route."""

@@ -1,0 +1,4 @@
+export FLASK_ENV=development
+FLASK_ENV=development
+export FLASK_APP=insta485
+FLASK_APP=insta485

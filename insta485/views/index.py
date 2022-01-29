@@ -7,9 +7,8 @@ import flask
 import insta485
 import arrow
 
-logname = 'awdeorio'
 
-def context_generator():
+def context_generator(logname):
     # Connect to database
     connection = insta485.model.get_db()
 
@@ -69,12 +68,11 @@ def context_generator():
 
 @insta485.app.route('/')
 def show_index():
-    global logname
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     else:
         logname = flask.session['username']
-        context = context_generator()
+        context = context_generator(logname)
         return flask.render_template("index.html", **context)
 
 
@@ -84,6 +82,7 @@ def upload_file(filename):
 
 @insta485.app.route('/submit/', methods=['GET','POST'])
 def process_submit():
+    logname = flask.session['username']
     if flask.request.method == 'POST':
         operation = flask.request.form['operation']
         postid = flask.request.form['postid']

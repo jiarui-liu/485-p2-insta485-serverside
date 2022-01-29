@@ -73,12 +73,29 @@
                     </li>
                     {% endfor %}
                 </ul>
-                {% if post.isLiked > 0 %}
 
+                {% if post.isLiked == 0 %}
+                <form action="/submit/" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="operation" value="like"/>
+                <input type="hidden" name="postid" value="{{ post.postid }}"/>
+                <input type="submit" name="like" value="like"/>
+                </form>
                 {% else %}
-
+                <form action="/submit/" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="operation" value="unlike"/>
+                <input type="hidden" name="postid" value="{{ post.postid }}"/>
+                <input type="submit" name="unlike" value="unlike"/>
+                </form>
                 {% endif %}
+
+                <form action="/submit/" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="operation" value="create"/>
+                    <input type="hidden" name="postid" value="{{ post.postid }}"/>
+                    <input type="text" name="text" required/>
+                    <input type="submit" name="comment" value="comment"/>
+                  </form>
             </div>
+
             {% endfor %}
 
             {% endblock %}

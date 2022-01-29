@@ -7,27 +7,9 @@ import flask
 import insta485
 import arrow
 
+logname = 'awdeorio'
 
-# @insta485.app.route('/')
-# def show_index():
-#     """Display / route."""
-#     # Connect to database
-#     connection = insta485.model.get_db()
-#     # Query database
-#     logname = "awdeorio"
-#     cur = connection.execute(
-#         "SELECT username, fullname "
-#         "FROM users "
-#         "WHERE username != ?",
-#         (logname, )
-#     )
-#     users = cur.fetchall()
-#     # Add database info to context
-#     context = {"users": users}
-#     return flask.render_template("index.html", **context)
-
-
-def context_generator(logname):
+def context_generator():
     # Connect to database
     connection = insta485.model.get_db()
 
@@ -87,16 +69,41 @@ def context_generator(logname):
 
 @insta485.app.route('/')
 def show_index():
-    # if 'username' not in flask.session:
-    #     return flask.redirect(flask.url_for('log_in_page'))
-    # else:
-    #     logname = flask.session['usename']
-    #     context = context_generator(logname)
-        
-    context = context_generator('awdeorio')
-    return flask.render_template("index.html", **context)
+    global logname
+    if 'username' not in flask.session:
+        return flask.redirect(flask.url_for('log_in_page'))
+    else:
+        logname = flask.session['username']
+        context = context_generator()
+        return flask.render_template("index.html", **context)
 
 
 @insta485.app.route('/uploads/<path:filename>')
-def download_file(filename):
+def upload_file(filename):
     return flask.send_from_directory(insta485.app.config['UPLOAD_FOLDER'],filename)
+
+@insta485.app.route('/submit/', methods=['GET','POST'])
+def process_submit():
+    if flask.request.method == 'POST':
+        operation = flask.request.form['operation']
+        postid = flask.request.form['postid']
+        connection = insta485.model.get_db()
+        if operation == "like":
+            cur = connection.execute(
+            "INSERT INTO likes(owner, postid)  VALUES (?,?)",
+            (logname, postid, )
+            )
+        elif operation == "unlike":
+            cur = connection.execute(
+            "DELETE FROM likes WHERE owner=? AND postid=?",
+            (logname, postid, )
+            )
+        elif operation == "create":
+            text = flask.request.form['text']
+            cur = connection.execute(
+                "INSERT INTO comments(owner, postid, text) VALUES (?,?,?)",
+                (logname, postid, text)
+            )
+    return flask.redirect(flask.url_for('show_index'))
+
+

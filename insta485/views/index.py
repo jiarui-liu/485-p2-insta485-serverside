@@ -13,6 +13,7 @@ def context_generator(logname):
     connection = insta485.model.get_db()
 
     # query information from post table
+    # The following relation is username1 follows username2
     cur = connection.execute(
         "SELECT * "
         "FROM posts "
@@ -20,9 +21,10 @@ def context_generator(logname):
         "ORDER BY postid DESC",
         (logname, logname)
     )
+    # fetchall() return a list of rows
     posts = cur.fetchall()
     
-    
+    # each post is a dictionary
     for post in posts:
         # add in comments for each post
         cur = connection.execute(
@@ -64,8 +66,6 @@ def context_generator(logname):
     return {"logname": logname, "posts": posts} 
         
     
-    
-
 @insta485.app.route('/')
 def show_index():
     if 'username' not in flask.session:

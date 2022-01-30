@@ -9,6 +9,8 @@ import flask
 import insta485
 import os
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import abort
+
 
 def context_generator_users(logname, username):
     connection = insta485.model.get_db()
@@ -19,6 +21,9 @@ def context_generator_users(logname, username):
     cur = connection.execute(
         "SELECT fullname FROM users WHERE username=?", (username,)
     ).fetchall()
+    # check username existence
+    if cur is None:
+        abort(404, f'You try to access a user that does not exist.')
     context["fullname"] = cur[0]["fullname"]
     
     # get following number
@@ -54,6 +59,7 @@ def context_generator_users(logname, username):
 
 @insta485.app.route('/users/<username>/')
 def user_page(username):
+    # the 'username' below has nothing to do with the passed-in argument <username>
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     else:
@@ -70,12 +76,16 @@ def operation():
     if flask.request.method == 'POST':
         operation = flask.request.form['operation']
         connection = insta485.model.get_db()
+
+        # insert the following pair into the database
         if operation == "follow":
             username = flask.request.form['username']
             connection.execute(
                 "INSERT INTO following(username1, username2) VALUES (?,?) ", (logname, username)
             )
             return flask.redirect('/users/' + username + '/')
+
+        # delete the following pair from the database
         elif operation == "unfollow":
             print("unfollow")
             username = flask.request.form['username']
@@ -83,6 +93,8 @@ def operation():
                 "DELETE FROM following WHERE username1 = ? AND username2 = ?", (logname, username)
             )
             return flask.redirect('/users/' + username + '/')
+
+        # upload image files
         elif operation == "create":
             file = flask.request.files['file']
             if file is not None:

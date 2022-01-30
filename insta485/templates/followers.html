@@ -21,8 +21,18 @@
         <li class="rightSubAlign">
             {% if (logname != follow.username) and (not follow.logname_follows_username) %}
             not following
+            <form action="/operation/user/" method="post" enctype="multipart/form-data">
+            <input type="submit" name="follow" value="follow"/>
+            <input type="hidden" name="username" value="{{ follow.username }}"/>
+            <input type="hidden" name="operation" value="follow"/>
+            </form>
             {% elif (logname != follow.username) and follow.logname_follows_username %}
             following
+            <form action="/operation/user/" method="post" enctype="multipart/form-data">
+            <input type="submit" name="unfollow" value="unfollow"/>
+            <input type="hidden" name="username" value="{{ follow.username }}"/>
+            <input type="hidden" name="operation" value="unfollow"/>
+            </form>
             {% endif %}
         </li>
     </ul>

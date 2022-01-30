@@ -1,3 +1,9 @@
+"""
+Insta485 following page view.
+URLs include:
+/users/<user_url_slug>/following/
+"""
+
 import flask
 import insta485
 from werkzeug.exceptions import abort

@@ -7,11 +7,8 @@ import flask
 import insta485
 import arrow
 
-
-def context_generator_index(logname):
-    # Connect to database
-    connection = insta485.model.get_db()
-
+""" generate all posts related to the logname. Namely, users the logname is following and logname itself. """
+def all_posts_generator(connection, logname):
     # query information from post table
     # The following relation is username1 follows username2
     cur = connection.execute(
@@ -21,6 +18,27 @@ def context_generator_index(logname):
         "ORDER BY postid DESC",
         (logname, logname)
     )
+    return cur
+
+""" generate a single post specified by postid """
+def single_posts_generator(connection, postid):
+    cur = connection.execute(
+        "SELECT * "
+        "FROM posts "
+        "WHERE postid = ?",
+        (postid, )
+    )
+    return cur
+
+def context_generator_index(logname, postid=None):
+    # Connect to database
+    connection = insta485.model.get_db()
+
+    if postid is None:
+        cur = all_posts_generator(connection, logname)
+    else:
+        cur = single_posts_generator(connection, postid)
+    
     # fetchall() return a list of rows
     posts = cur.fetchall()
     
@@ -28,7 +46,7 @@ def context_generator_index(logname):
     for post in posts:
         # add in comments for each post
         cur = connection.execute(
-            "SELECT owner, text "
+            "SELECT commentid, owner, text "
             "FROM comments "
             "WHERE postid = ?"
             "ORDER BY created",
@@ -89,24 +107,47 @@ def process_submit():
     logname = flask.session['username']
     if flask.request.method == 'POST':
         operation = flask.request.form['operation']
-        postid = flask.request.form['postid']
         connection = insta485.model.get_db()
         if operation == "like":
+            postid = flask.request.form['postid']
             connection.execute(
                 "INSERT INTO likes(owner, postid)  VALUES (?,?)",
                 (logname, postid, )
             )
         elif operation == "unlike":
+            postid = flask.request.form['postid']
             connection.execute(
                 "DELETE FROM likes WHERE owner=? AND postid=?",
                 (logname, postid, )
             )
         elif operation == "create":
+            postid = flask.request.form['postid']
             text = flask.request.form['text']
             connection.execute(
                 "INSERT INTO comments(owner, postid, text) VALUES (?,?,?)",
                 (logname, postid, text)
             )
+        elif operation == "delete":
+            delete_comment = 'commentid' in flask.request.form.keys()
+            if not delete_comment:
+                postid = flask.request.form['postid']
+                connection.execute(
+                    "DELETE FROM comments "
+                    "WHERE postid = ?",
+                    (postid, )
+                )
+                connection.execute(
+                    "DELETE FROM posts "
+                    "WHERE postid = ?",
+                    (postid, )
+                )
+            else:
+                commentid = flask.request.form['commentid']
+                connection.execute(
+                    "DELETE FROM comments "
+                    "WHERE commentid = ?",
+                    (commentid, )
+                )
     return flask.redirect(flask.url_for('show_index'))
 
 

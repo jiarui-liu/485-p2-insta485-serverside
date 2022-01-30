@@ -1,7 +1,7 @@
 """
 Insta485 login page view.
 URLs include:
-/users/<user_url_slug>
+/users/<user_url_slug>/
 """
 
 
@@ -67,7 +67,8 @@ def user_page(username):
         context = context_generator_users(logname,username)
         return flask.render_template("user.html", **context)
     
-    
+
+""" process all kinds of user operations """
 @insta485.app.route('/operation/user/',methods=['GET','POST'])
 def operation():
     if 'username' not in flask.session:

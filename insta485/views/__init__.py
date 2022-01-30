@@ -4,3 +4,4 @@ from insta485.views.login import log_in_page, log_out_page
 from insta485.views.users import user_page
 from insta485.views.followers import followers_page
 from insta485.views.following import following_page
+from insta485.views.posts import posts_page

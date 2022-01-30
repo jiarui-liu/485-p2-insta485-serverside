@@ -16,7 +16,7 @@ def all_posts_generator(connection, logname):
         "FROM posts "
         "WHERE owner IN (SELECT username2 FROM following WHERE username1 = ?) OR owner = ? "
         "ORDER BY postid DESC",
-        (logname, logname)
+        (logname, logname,)
     )
     return cur
 

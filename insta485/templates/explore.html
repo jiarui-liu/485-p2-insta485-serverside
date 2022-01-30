@@ -9,12 +9,20 @@
             ">
             <ul class="head">
                 <li class="leftAlignHead">
-                    <img alt="{{ follow.username }}" src="{{ follow.user_img_url }}" width="50" />
+                    <img alt="{{ follow.username }}" src="/uploads/{{ follow.user_img_url }}" width="50" />
                 </li>
                 <li class="leftAlignHead">
                     <a href="{{ "/users/{}/".format(follow.username) }}">{{ follow.username }}</a>
                 </li>
             </ul>
+        </li>
+
+        <li class="rightSubAlign">
+            <form action="/operation/user/" method="post" enctype="multipart/form-data">
+            <input type="submit" name="follow" value="follow"/>
+            <input type="hidden" name="username" value="{{ follow.username }}"/>
+            <input type="hidden" name="operation" value="follow"/>
+            </form>
         </li>
     </ul>
 </div>

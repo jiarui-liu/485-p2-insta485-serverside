@@ -36,8 +36,8 @@ def log_in_page():
             flask.flash(error)
     return flask.render_template('login.html')
 
-
-@insta485.app.route('/accounts/logout/', methods=('GET','POST'))
+""" the endpoint only accepts `POST` requests """
+@insta485.app.route('/accounts/logout/', methods=('POST'))
 def log_out_page():
     flask.session.clear()
     return flask.redirect(flask.url_for('log_in_page'))

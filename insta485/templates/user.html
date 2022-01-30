@@ -1,11 +1,31 @@
 {% extends "index.html" %}
 {% block body %}
 <p class="subName">{{ username }}</p>
+
+{% if (logname == username) %}
+<h4> <a href="/accounts/edit/"> Edit Profile </a></h4>
+<form action="/accounts/logout/" method="post" enctype="multipart/form-data">
+    <input type="submit" name="logout" value="Logout"/>
+  </form>
+{% endif %}
+
 {% if (logname != username) and (not logname_follows_username) %}
 <p style="font-size: 20px">not following</p>
+<form action="/operation/user/" method="post" enctype="multipart/form-data">
+    <input type="submit" name="follow" value="follow"/>
+    <input type="hidden" name="username" value="{{ username }}"/>
+    <input type="hidden" name="operation" value="follow"/>
+  </form>
 {% elif (logname != username) and (logname_follows_username) %}
 <p style="font-size: 20px">following</p>
+<form action="/operation/user/" method="post" enctype="multipart/form-data">
+    <input type="submit" name="unfollow" value="unfollow"/>
+    <input type="hidden" name="username" value="{{ username }}"/>
+    <input type="hidden" name="operation" value="unfollow"/>
+  </form>
 {% endif %}
+
+
 <p style="font-size: 20px">
     {% if total_posts == 1 %}
     {{ "{} post".format(total_posts) }}
@@ -23,9 +43,17 @@
 </p>
 <p style="font-size: 20px">{{ fullname }}</p>
 
+{% if (logname == username) %}
+<form action="/operation/user/" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept="image/*" required/>
+    <input type="submit" name="create_post" value="upload new post"/>
+    <input type="hidden" name="operation" value="create"/>
+  </form>
+{% endif %}
+
 <div>
     {% for post in posts %}
-    <a href={{ "/posts/{}/" .format(post.postid) }} class="horizontal"><img alt="left" src="{{ post.img_url }}"
+    <a href={{ "/posts/{}/" .format(post.postid) }} class="horizontal"><img alt="left" src="/uploads/{{ post.filename }}"
             style="width: 48%" /></a>
     {% endfor %}
 </div>

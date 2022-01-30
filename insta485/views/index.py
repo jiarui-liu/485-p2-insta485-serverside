@@ -8,7 +8,7 @@ import insta485
 import arrow
 
 
-def context_generator(logname):
+def context_generator_index(logname):
     # Connect to database
     connection = insta485.model.get_db()
 
@@ -72,34 +72,38 @@ def show_index():
         return flask.redirect(flask.url_for('log_in_page'))
     else:
         logname = flask.session['username']
-        context = context_generator(logname)
+        context = context_generator_index(logname)
         return flask.render_template("index.html", **context)
 
 
 @insta485.app.route('/uploads/<path:filename>')
 def upload_file(filename):
+    if 'username' not in flask.session:
+        return flask.redirect(flask.url_for('log_in_page'))
     return flask.send_from_directory(insta485.app.config['UPLOAD_FOLDER'],filename)
 
 @insta485.app.route('/submit/', methods=['GET','POST'])
 def process_submit():
+    if 'username' not in flask.session:
+        return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
     if flask.request.method == 'POST':
         operation = flask.request.form['operation']
         postid = flask.request.form['postid']
         connection = insta485.model.get_db()
         if operation == "like":
-            cur = connection.execute(
-            "INSERT INTO likes(owner, postid)  VALUES (?,?)",
-            (logname, postid, )
+            connection.execute(
+                "INSERT INTO likes(owner, postid)  VALUES (?,?)",
+                (logname, postid, )
             )
         elif operation == "unlike":
-            cur = connection.execute(
-            "DELETE FROM likes WHERE owner=? AND postid=?",
-            (logname, postid, )
+            connection.execute(
+                "DELETE FROM likes WHERE owner=? AND postid=?",
+                (logname, postid, )
             )
         elif operation == "create":
             text = flask.request.form['text']
-            cur = connection.execute(
+            connection.execute(
                 "INSERT INTO comments(owner, postid, text) VALUES (?,?,?)",
                 (logname, postid, text)
             )

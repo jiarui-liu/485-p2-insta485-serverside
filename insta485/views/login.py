@@ -18,20 +18,22 @@ def log_in_page():
         password = flask.request.form['password']
         connection = insta485.model.get_db()
         error = None
-        correct_password = connection.execute(
+        cur = connection.execute(
             'SELECT password FROM users WHERE username=?',
             (username,)
-        ).fetchone()['password']
+        ).fetchall()
         
-        if correct_password is None:
+        if len(cur) == 0:
             error = 'Incorrect username'
-        elif correct_password != password:
-            error = 'Incorrect password'
         else:
-            flask.session.clear()
-            flask.session['username'] = username
-            return flask.redirect(flask.url_for('show_index'))
-        flask.flash(error)
+            correct_password = cur[0]['password']
+            if correct_password != password:
+                error = 'Incorrect password'
+            else:
+                flask.session.clear()
+                flask.session['username'] = username
+                return flask.redirect(flask.url_for('show_index'))
+            flask.flash(error)
     return flask.render_template('login.html')
 
 

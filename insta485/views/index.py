@@ -78,10 +78,14 @@ def show_index():
 
 @insta485.app.route('/uploads/<path:filename>')
 def upload_file(filename):
+    if 'username' not in flask.session:
+        return flask.redirect(flask.url_for('log_in_page'))
     return flask.send_from_directory(insta485.app.config['UPLOAD_FOLDER'],filename)
 
 @insta485.app.route('/submit/', methods=['GET','POST'])
 def process_submit():
+    if 'username' not in flask.session:
+        return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
     if flask.request.method == 'POST':
         operation = flask.request.form['operation']

@@ -37,12 +37,10 @@ def context_generator_users(logname, username):
     cur = connection.execute(
         "SELECT * FROM following WHERE username1=? AND username2=?", (logname, username,)
     ).fetchall()
-    print(cur)
     if len(cur) == 0:
         context["logname_follows_username"] = False
     else:
         context["logname_follows_username"] = True
-    print(context["logname_follows_username"])
         
     # get posts information
     posts = connection.execute(
@@ -56,7 +54,6 @@ def context_generator_users(logname, username):
 
 @insta485.app.route('/users/<username>/')
 def user_page(username):
-    
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     else:
@@ -67,6 +64,8 @@ def user_page(username):
     
 @insta485.app.route('/operation/user/',methods=['GET','POST'])
 def operation():
+    if 'username' not in flask.session:
+        return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
     if flask.request.method == 'POST':
         operation = flask.request.form['operation']

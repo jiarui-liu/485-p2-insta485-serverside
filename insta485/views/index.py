@@ -34,6 +34,8 @@ def context_generator_index(logname, postid=None):
     # Connect to database
     connection = insta485.model.get_db()
 
+
+
     if postid is None:
         cur = all_posts_generator(connection, logname)
     else:
@@ -80,7 +82,7 @@ def context_generator_index(logname, postid=None):
         )
         post["isLiked"] = len(cur.fetchall())
         
-    print(posts[0])
+    # print(posts[0])
     return {"logname": logname, "posts": posts} 
         
     
@@ -90,6 +92,18 @@ def show_index():
         return flask.redirect(flask.url_for('log_in_page'))
     else:
         logname = flask.session['username']
+        connection = insta485.model.get_db()
+        # check the logname exists in users
+        cur = connection.execute(
+            "SELECT * FROM users "
+            "WHERE username = ?",
+            (logname, )
+        ).fetchall()
+        if len(cur) == 0:
+            flask.session.clear()
+            return flask.redirect(flask.url_for('log_in_page'))
+        
+        # generate all posts in the root page /
         context = context_generator_index(logname)
         return flask.render_template("index.html", **context)
 

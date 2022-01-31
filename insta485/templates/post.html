@@ -36,7 +36,7 @@
         </li>
         {% if comment.owner == logname %}
         <li>
-            <form action="/submit/" method="post" enctype="multipart/form-data">
+            <form action="/submit/?target={{ "/posts/{}/".format(post.postid) }} " method="post" enctype="multipart/form-data">
             <input type="hidden" name="operation" value="delete"/>
             <input type="hidden" name="commentid" value="{{ comment.commentid }}"/>
             <input type="submit" name="uncomment" value="delete"/>
@@ -47,20 +47,20 @@
     </ul>
 
     {% if post.isLiked == 0 %}
-    <form action="/submit/" method="post" enctype="multipart/form-data">
+    <form action="/submit/?target={{ "/posts/{}/".format(post.postid) }} " method="post" enctype="multipart/form-data">
     <input type="hidden" name="operation" value="like"/>
     <input type="hidden" name="postid" value="{{ post.postid }}"/>
     <input type="submit" name="like" value="like"/>
     </form>
     {% else %}
-    <form action="/submit/" method="post" enctype="multipart/form-data">
+    <form action="/submit/?target={{ "/posts/{}/".format(post.postid) }} " method="post" enctype="multipart/form-data">
     <input type="hidden" name="operation" value="unlike"/>
     <input type="hidden" name="postid" value="{{ post.postid }}"/>
     <input type="submit" name="unlike" value="unlike"/>
     </form>
     {% endif %}
 
-    <form action="/submit/" method="post" enctype="multipart/form-data">
+    <form action="/submit/?target={{ "/posts/{}/".format(post.postid) }} " method="post" enctype="multipart/form-data">
     <input type="hidden" name="operation" value="create"/>
     <input type="hidden" name="postid" value="{{ post.postid }}"/>
     <input type="text" name="text" required/>
@@ -68,7 +68,7 @@
     </form>
 
     {% if post.owner == logname %}
-    <form action="/submit/" method="post" enctype="multipart/form-data">
+    <form action="/submit/?target=/" method="post" enctype="multipart/form-data">
     <input type="hidden" name="operation" value="delete"/>
     <input type="hidden" name="postid" value="{{ post.postid }}"/>
     <input type="submit" name="delete" value="delete this post"/>

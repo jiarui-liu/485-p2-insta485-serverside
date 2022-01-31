@@ -98,11 +98,11 @@ def operation():
         # upload image files
         elif operation == "create":
             file = flask.request.files['file']
-            if file is not None:
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], filename))
-                connection.execute(
-                    "INSERT INTO posts(filename, owner) VALUES (?,?)", (filename, logname)
-                )
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], filename))
+            connection.execute(
+                "INSERT INTO posts(filename, owner) VALUES (?,?)", (filename, logname)
+            )
+            
     return flask.redirect('/users/' + logname + '/')
     

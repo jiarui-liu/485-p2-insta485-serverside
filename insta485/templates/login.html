@@ -25,21 +25,29 @@
 					</a>
 				</li>
 				<li class="rightAlign">
-					<a class="active">login</a>
+					<a class="active" href="/accounts/login/">login</a>
 				</li>
 			</ul>
 
 			<hr class="grey" />
 		</div>
 
-		<form action="/accounts/login/" method="post" enctype="multipart/form-data">
-			username <input type="text" name="username" required /> password
-			<input type="password" name="password" required />
-			<input type="submit" value="login" />
-			<input type="hidden" name="operation" value="login" />
-		</form>
-		<p>
-			Don't have an account? <a href="/accounts/create/"><b>Sign up</b></a>
-		</p>
+		<div class="myDivBody">
+			{% block body %}
+			<form
+				action="/accounts/login/"
+				method="post"
+				enctype="multipart/form-data"
+			>
+				username <input type="text" name="username" required /> password
+				<input type="password" name="password" required />
+				<input type="submit" value="login" />
+				<input type="hidden" name="operation" value="login" />
+			</form>
+			<p>
+				Don't have an account? <a href="/accounts/create/"><b>Sign up</b></a>
+			</p>
+			{% endblock %}
+		</div>
 	</body>
 </html>

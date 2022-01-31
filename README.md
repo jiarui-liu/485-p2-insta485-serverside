@@ -28,3 +28,7 @@
 - specific form of url in `<form action="<FIXME_FOLLOWING_URL_HERE>?target=<FIXME_CURRENT_PAGE_URL_HERE>" method="post" enctype="multipart/form-data">`, especially the one following `?target=`.
 - `flask.abort(403)` https://eecs485staff.github.io/p2-insta485-serverside/#access-control
 - should we add `abort(404)` for Index `GET /`?
+- really need `if flask.request.method == 'POST':`?
+- users.py need line 101 `if file is not None`? same question on account.py line 18
+- double return?
+- flask.flash no output on the website

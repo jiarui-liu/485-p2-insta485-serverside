@@ -114,6 +114,30 @@ def upload_file(filename):
         return flask.redirect(flask.url_for('log_in_page'))
     return flask.send_from_directory(insta485.app.config['UPLOAD_FOLDER'],filename)
 
+@insta485.app.route('/likes/', methods=['POST'])
+def process_like():
+    if 'username' not in flask.session:
+        return flask.redirect(flask.url_for('log_in_page'))
+    logname = flask.session['username']
+    operation = flask.request.form['operation']
+    connection = insta485.model.get_db()
+    if operation == "like":
+        postid = flask.request.form['postid']
+        connection.execute(
+            "INSERT INTO likes(owner, postid)  VALUES (?,?)",
+            (logname, postid, )
+        )
+    elif operation == "unlike":
+        postid = flask.request.form['postid']
+        connection.execute(
+            "DELETE FROM likes WHERE owner=? AND postid=?",
+            (logname, postid, )
+        )
+    target = flask.request.args.get('target')
+    if target is None:
+        target = '/'
+    return flask.redirect(target)
+
 @insta485.app.route('/submit/', methods=['GET','POST'])
 def process_submit():
     if 'username' not in flask.session:
@@ -122,19 +146,7 @@ def process_submit():
     if flask.request.method == 'POST':
         operation = flask.request.form['operation']
         connection = insta485.model.get_db()
-        if operation == "like":
-            postid = flask.request.form['postid']
-            connection.execute(
-                "INSERT INTO likes(owner, postid)  VALUES (?,?)",
-                (logname, postid, )
-            )
-        elif operation == "unlike":
-            postid = flask.request.form['postid']
-            connection.execute(
-                "DELETE FROM likes WHERE owner=? AND postid=?",
-                (logname, postid, )
-            )
-        elif operation == "create":
+        if operation == "create":
             postid = flask.request.form['postid']
             text = flask.request.form['text']
             connection.execute(

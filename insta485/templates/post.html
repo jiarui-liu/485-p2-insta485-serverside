@@ -47,13 +47,13 @@
     </ul>
 
     {% if post.isLiked == 0 %}
-    <form action="/submit/?target={{ "/posts/{}/".format(post.postid) }} " method="post" enctype="multipart/form-data">
+    <form action="/likes/?target={{ "/posts/{}/".format(post.postid) }} " method="post" enctype="multipart/form-data">
     <input type="hidden" name="operation" value="like"/>
     <input type="hidden" name="postid" value="{{ post.postid }}"/>
     <input type="submit" name="like" value="like"/>
     </form>
     {% else %}
-    <form action="/submit/?target={{ "/posts/{}/".format(post.postid) }} " method="post" enctype="multipart/form-data">
+    <form action="/likes/?target={{ "/posts/{}/".format(post.postid) }} " method="post" enctype="multipart/form-data">
     <input type="hidden" name="operation" value="unlike"/>
     <input type="hidden" name="postid" value="{{ post.postid }}"/>
     <input type="submit" name="unlike" value="unlike"/>

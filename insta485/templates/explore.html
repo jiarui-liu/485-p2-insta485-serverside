@@ -18,7 +18,7 @@
         </li>
 
         <li class="rightSubAlign">
-            <form action="/operation/user/" method="post" enctype="multipart/form-data">
+            <form action="/operation/user/?target={{ "/users/{}/".format(follow.username) }}" method="post" enctype="multipart/form-data">
             <input type="submit" name="follow" value="follow"/>
             <input type="hidden" name="username" value="{{ follow.username }}"/>
             <input type="hidden" name="operation" value="follow"/>

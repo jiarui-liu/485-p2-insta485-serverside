@@ -29,7 +29,8 @@ def create_page():
             "INSERT INTO users(username, fullname, email, filename, password) VALUES (?, ?, ?, ?, ?)",
             (username, fullname, email, filename, password)
         )
-        return flask.redirect(flask.url_for('log_in_page'))
+        target = flask.request.args.get('target')
+        return flask.redirect(target)
     return flask.render_template('create.html')
 
 
@@ -98,7 +99,8 @@ def delete_page():
             )
             # clear session
             flask.session.clear()
-        return flask.redirect(flask.url_for('log_in_page'))
+        target = flask.request.args.get('target')
+        return flask.redirect(target)
     return flask.render_template('delete.html', **context)
 
 
@@ -120,15 +122,23 @@ def edit_page():
         fullname = flask.request.form['fullname']
         email = flask.request.form['email']
         filename = secure_filename(file.filename)
-        file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], filename))
-        operation = flask.request.form['operation']
-        if operation == "edit_account":
-            connection.execute(
-                "UPDATE users "
-                "SET filename = ?, fullname = ?, email = ? "
-                "WHERE username = ?", (filename, fullname, email, logname, )
-            )
-        return flask.redirect(flask.url_for('show_index'))
+        if filename is not None:
+            try:
+                file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], filename))
+                operation = flask.request.form['operation']
+                if operation == "edit_account":
+                    connection.execute(
+                        "UPDATE users "
+                        "SET filename = ?, fullname = ?, email = ? "
+                        "WHERE username = ?", (filename, fullname, email, logname, )
+                    )
+            except Exception:
+                error = 'exception occurred when uploading the file.'
+        else:
+            error='Please upload a photo.'
+        flask.flash(error)
+        target = flask.request.args.get('target')
+        return flask.redirect(target)
     return flask.render_template('edit.html', **context)
 
 @insta485.app.route('/accounts/password/', methods=('GET', 'POST'))
@@ -156,6 +166,7 @@ def password_page():
                 "WHERE username = ?",
                 (new_password1, logname, )
             )
-            return flask.redirect(flask.url_for('log_in_page'))
+            target = flask.request.args.get('target')
+            return flask.redirect(target)
         flask.flash(error)
     return flask.render_template('password.html', **context)

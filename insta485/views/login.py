@@ -32,7 +32,8 @@ def log_in_page():
             else:
                 flask.session.clear()
                 flask.session['username'] = username
-                return flask.redirect(flask.url_for('show_index'))
+                target = flask.request.args.get('target')
+                return flask.redirect(target)
             flask.flash(error)
     return flask.render_template('login.html')
 

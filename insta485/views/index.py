@@ -162,6 +162,7 @@ def process_submit():
                     "WHERE commentid = ?",
                     (commentid, )
                 )
-    return flask.redirect(flask.url_for('show_index'))
+    target = flask.request.args.get('target')
+    return flask.redirect(target)
 
 

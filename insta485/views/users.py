@@ -84,7 +84,8 @@ def operation():
             connection.execute(
                 "INSERT INTO following(username1, username2) VALUES (?,?) ", (logname, username)
             )
-            return flask.redirect('/users/' + username + '/')
+            target = flask.request.args.get('target')
+            return flask.redirect(target)
 
         # delete the following pair from the database
         elif operation == "unfollow":
@@ -93,7 +94,8 @@ def operation():
             connection.execute(
                 "DELETE FROM following WHERE username1 = ? AND username2 = ?", (logname, username)
             )
-            return flask.redirect('/users/' + username + '/')
+            target = flask.request.args.get('target')
+            return flask.redirect(target)
 
         # upload image files
         elif operation == "create":
@@ -103,6 +105,7 @@ def operation():
             connection.execute(
                 "INSERT INTO posts(filename, owner) VALUES (?,?)", (filename, logname)
             )
-            
-    return flask.redirect('/users/' + logname + '/')
+            target = flask.request.args.get('target')
+            return flask.redirect(target)
+
     

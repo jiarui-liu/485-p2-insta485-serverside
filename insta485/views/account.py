@@ -99,19 +99,21 @@ def process_accounts():
             return flask.redirect(flask.url_for('show_index'))
         username = flask.request.form['username']
         password = flask.request.form['password']
+        # check empty field
         if not username or not password:
             abort(400, f'Username or password fields are empty')
         cur = connection.execute(
             'SELECT password FROM users WHERE username=?',
             (username,)
         ).fetchall()
-        
+        # check username authentication
         if len(cur) == 0:
             abort(403, f'Incorrect username.')
         correct_password = cur[0]['password']
         # check password hash
         if not check_password_hash(password, correct_password):
             abort(403, f'Incorrect password.')
+            # set a session cookie
         flask.session.clear()
         flask.session['username'] = username
     # operation: create
@@ -124,11 +126,13 @@ def process_accounts():
         email = flask.request.form['email']
         password = flask.request.form['password']
         filename = secure_filename(file.filename)
+        # check empty field
         if not fullname or not username or not password or not email or not filename:
             abort(400, f'Username/password/fullname/email/file is empty.')
         cur = connection.execute(
             "SELECT username FROM users"
         ).fetchall()
+        # check conflict error
         for cur_item in cur:
             if cur_item['username'] == username:
                 abort(409, f'You try to create an account with an existing username in the database.')
@@ -142,6 +146,7 @@ def process_accounts():
         )
     # operation: delete
     elif operation == 'delete':
+        # check log in
         if 'username' not in flask.session:
             abort(403, f'You are not logged in.')
         logname = flask.session['username']
@@ -201,12 +206,14 @@ def process_accounts():
         flask.session.clear()
     # operation: update_password
     elif operation == 'update_password':
+        # check log in
         if 'username' not in flask.session:
             abort(403, f'You are not logged in.')
         logname = flask.session['username']
         password = flask.request.form['password']
         new_password1 = flask.request.form['new_password1']
         new_password2 = flask.request.form['new_password2']
+        # check empty field
         if not password or not new_password1 or not new_password2:
             abort(400, f'Password/new_password1/new_password2 is empty.')
         real_old_password = connection.execute(
@@ -220,7 +227,7 @@ def process_accounts():
             abort(401, f'Two new passwords mismatch')
         # hash new password
         new_password_hash = generate_password_hash(new_password1)
-        # store new password
+        # update new password
         connection.execute(
             "UPDATE users "
             "SET password = ? "
@@ -229,6 +236,7 @@ def process_accounts():
         )
     # operation: edit_account
     elif operation == 'edit_account':
+        # check log in
         if 'username' not in flask.session:
             abort(403, f'You are not logged in.')
         logname = flask.session['username']
@@ -236,8 +244,10 @@ def process_accounts():
         fullname = flask.request.form['fullname']
         email = flask.request.form['email']
         filename = secure_filename(file.filename)
+        # check empty field
         if not fullname or not email:
             abort(400, f'Fullname/email is empty.')
+        # whether photo file is included``
         if filename:
             # remove old
             old_filename = connection.execute(

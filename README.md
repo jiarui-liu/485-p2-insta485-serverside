@@ -22,5 +22,6 @@
 #### Flask
 - `run pytest -v` to see current bugs
   - `/accounts/create/` test failed: `assert 302 == 200`
-  - pydocstyle test failed
-  - pylint test failed
+    - see https://eecs485staff.github.io/p2-insta485-serverside/#testing-2
+  - pydocstyle and pylint test failed
+    - see spec https://eecs485staff.github.io/p2-insta485-serverside/#insta485test-script

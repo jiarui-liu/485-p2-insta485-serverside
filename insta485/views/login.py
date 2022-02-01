@@ -21,5 +21,6 @@ def log_in_page():
 
 @insta485.app.route('/accounts/logout/', methods=['POST'])
 def log_out_page():
+    # whether or not username is in the session does not matter
     flask.session.clear()
     return flask.redirect(flask.url_for('log_in_page'))

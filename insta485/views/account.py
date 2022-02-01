@@ -13,6 +13,7 @@ import uuid
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import abort
 
+
 def generate_password_hash(password):
     algorithm = 'sha512'
     salt = uuid.uuid4().hex
@@ -22,6 +23,7 @@ def generate_password_hash(password):
     password_hash = hash_obj.hexdigest()
     password_db_string = "$".join([algorithm, salt, password_hash])
     return password_db_string
+
 
 def check_password_hash(password_to_check, password_hash):
     salt = password_hash.split('$')[1]
@@ -33,11 +35,13 @@ def check_password_hash(password_to_check, password_hash):
     password_db_string = "$".join([algorithm, salt, password_hash_after])
     return password_db_string == password_hash
 
+
 def generate_filename(filename):
     stem = uuid.uuid4().hex
     suffix = pathlib.Path(filename).suffix
     uuid_basename = f"{stem}{suffix}"
     return uuid_basename
+
 
 def check_filename(filename_to_check, filename_hash):
     filename_split = os.path.splitext(filename_hash)
@@ -46,14 +50,20 @@ def check_filename(filename_to_check, filename_hash):
     uuid_basename = f"{stem}{suffix}"
     return filename_to_check == uuid_basename
 
+
 """ GET /accounts/create/ """
+
+
 @insta485.app.route('/accounts/create/')
 def create_page():
     if 'username' in flask.session:
         return flask.redirect(flask.url_for('edit_page'))
     return flask.render_template('create.html')
 
+
 """ GET /accounts/delete/ """
+
+
 @insta485.app.route('/accounts/delete/')
 def delete_page():
     if 'username' not in flask.session:
@@ -63,7 +73,10 @@ def delete_page():
         context = {"logname": logname}
     return flask.render_template('delete.html', **context)
 
+
 """ GET /accounts/edit/ """
+
+
 @insta485.app.route('/accounts/edit/')
 def edit_page():
     if 'username' not in flask.session:
@@ -79,7 +92,10 @@ def edit_page():
     context["user_info"] = user_info
     return flask.render_template('edit.html', **context)
 
+
 """ GET /accounts/password/ """
+
+
 @insta485.app.route('/accounts/password/')
 def password_page():
     if 'username' not in flask.session:
@@ -88,7 +104,10 @@ def password_page():
     context = {"logname": logname}
     return flask.render_template('password.html', **context)
 
+
 """ POST /accounts/?target=URL """
+
+
 @insta485.app.route('/accounts/', methods=['POST'])
 def process_accounts():
     operation = flask.request.form['operation']
@@ -127,7 +146,8 @@ def process_accounts():
         password = flask.request.form['password']
         filename = secure_filename(file.filename)
         # check empty field
-        if not fullname or not username or not password or not email or not filename:
+        if not fullname or not username \
+                or not password or not email or not filename:
             abort(400, f'Username/password/fullname/email/file is empty.')
         cur = connection.execute(
             "SELECT username FROM users"
@@ -135,15 +155,22 @@ def process_accounts():
         # check conflict error
         for cur_item in cur:
             if cur_item['username'] == username:
-                abort(409, f'You try to create an account with an existing username in the database.')
+                abort(
+                    409,
+                    f'You try to create an account with \
+                        an existing username in the database.')
         uuid_basename = generate_filename(filename)
-        file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], uuid_basename))
+        file.save(
+            os.path.join(
+                insta485.app.config['UPLOAD_FOLDER'],
+                uuid_basename))
         # generate password hash
         password_db_string = generate_password_hash(password)
         connection.execute(
-            "INSERT INTO users(username, fullname, email, filename, password) VALUES (?, ?, ?, ?, ?)",
-            (username, fullname, email, uuid_basename, password_db_string)
-        )
+            "INSERT INTO "
+            "users(username, fullname, email, filename, password) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (username, fullname, email, uuid_basename, password_db_string))
     # operation: delete
     elif operation == 'delete':
         # check log in
@@ -188,7 +215,7 @@ def process_accounts():
         # delete this user from following table
         connection.execute(
             "DELETE FROM following WHERE "
-            "username1 = ? OR username2 = ?", 
+            "username1 = ? OR username2 = ?",
             (logname, logname, )
         )
         # delete filename
@@ -217,7 +244,7 @@ def process_accounts():
         if not password or not new_password1 or not new_password2:
             abort(400, f'Password/new_password1/new_password2 is empty.')
         real_old_password = connection.execute(
-            "SELECT password FROM users WHERE username = ?",(logname, )
+            "SELECT password FROM users WHERE username = ?", (logname, )
         ).fetchall()[0]['password']
         # check old password hash
         if not check_password_hash(password, real_old_password):
@@ -254,15 +281,21 @@ def process_accounts():
                 "SELECT filename FROM posts WHERE "
                 "owner = ?", (logname, )
             ).fetchall()[0]['filename']
-            os.remove(os.path.join(insta485.app.config['UPLOAD_FOLDER'], old_filename))
+            os.remove(
+                os.path.join(
+                    insta485.app.config['UPLOAD_FOLDER'],
+                    old_filename))
             # save new
             uuid_basename = generate_filename(filename)
-            file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], uuid_basename))
+            file.save(
+                os.path.join(
+                    insta485.app.config['UPLOAD_FOLDER'],
+                    uuid_basename))
             connection.execute(
                 "UPDATE users "
                 "SET filename = ?, fullname = ?, email = ? "
-                "WHERE username = ?", (uuid_basename, fullname, email, logname, )
-            )
+                "WHERE username = ?",
+                (uuid_basename, fullname, email, logname,))
         else:
             connection.execute(
                 "UPDATE users "

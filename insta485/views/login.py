@@ -9,11 +9,16 @@ import flask
 import insta485
 
 """ GET /accounts/login/ """
+
+
 @insta485.app.route('/accounts/login/')
 def log_in_page():
     return flask.render_template('login.html')
 
+
 """ POST /accounts/logout/ """
+
+
 @insta485.app.route('/accounts/logout/', methods=['POST'])
 def log_out_page():
     flask.session.clear()

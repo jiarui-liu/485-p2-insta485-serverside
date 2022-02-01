@@ -10,7 +10,10 @@ import os
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import abort
 
-""" generate all posts related to the logname. Namely, users the logname is following and logname itself. """
+""" generate all posts related to the logname.  \
+Namely, users the logname is following and logname itself. """
+
+
 def all_posts_generator(connection, logname):
     # query information from post table
     # The following relation is username1 follows username2
@@ -18,13 +21,17 @@ def all_posts_generator(connection, logname):
     cur = connection.execute(
         "SELECT * "
         "FROM posts "
-        "WHERE owner IN (SELECT username2 FROM following WHERE username1 = ?) OR owner = ? "
+        "WHERE owner IN "
+        "(SELECT username2 FROM following WHERE username1 = ?) OR owner = ? "
         "ORDER BY postid DESC",
         (logname, logname,)
     )
     return cur
 
+
 """ generate a single post specified by postid """
+
+
 def single_posts_generator(connection, postid):
     cur = connection.execute(
         "SELECT * "
@@ -34,6 +41,7 @@ def single_posts_generator(connection, postid):
     )
     return cur
 
+
 def context_generator_index(logname, postid=None):
     # Connect to database
     connection = insta485.model.get_db()
@@ -42,10 +50,10 @@ def context_generator_index(logname, postid=None):
         cur = all_posts_generator(connection, logname)
     else:
         cur = single_posts_generator(connection, postid)
-    
+
     # fetchall() return a list of rows
     posts = cur.fetchall()
-    
+
     # each post is a dictionary
     for post in posts:
         # add in comments for each post
@@ -58,37 +66,40 @@ def context_generator_index(logname, postid=None):
             (post["postid"],)
         )
         post["comments"] = cur.fetchall()
-        
+
         # add in likes for each post
         cur = connection.execute(
             "SELECT likeid FROM likes WHERE postid = ?",
             (post["postid"],)
         )
         post["likes"] = len(cur.fetchall())
-        
+
         # change timestamp to human readable format
         past = arrow.get(post["created"])
         present = arrow.utcnow()
         post["created"] = past.humanize(present)
-        
+
         # add post owner's image
         cur = connection.execute(
             "SELECT filename FROM users WHERE username = ?",
             (post["owner"],)
         )
         post["owner_img_url"] = cur.fetchall()[0]['filename']
-        
+
         # see if log in user liked this post
         cur = connection.execute(
             "SELECT * FROM likes WHERE owner = ? AND postid = ?",
             (logname, post["postid"], )
         )
         post["isLiked"] = len(cur.fetchall())
-        
+
     # print(posts[0])
-    return {"logname": logname, "posts": posts} 
-        
+    return {"logname": logname, "posts": posts}
+
+
 """ GET / """
+
+
 @insta485.app.route('/')
 def show_index():
     if 'username' not in flask.session:
@@ -105,16 +116,20 @@ def show_index():
         if len(cur) == 0:
             flask.session.clear()
             return flask.redirect(flask.url_for('log_in_page'))
-        
+
         # generate all posts in the root page /
         context = context_generator_index(logname)
         return flask.render_template("index.html", **context)
 
+
 """ GET /uploads/<filename> """
+
+
 @insta485.app.route('/uploads/<path:filename>')
 def upload_file(filename):
     if 'username' not in flask.session:
-        abort(403, f'An unauthenticated user attempts to access an uploaded file.')
+        abort(403, f'An unauthenticated user attempts to \
+              access an uploaded file.')
     connection = insta485.model.get_db()
     cur1 = connection.execute(
         "SELECT filename FROM posts"
@@ -130,10 +145,18 @@ def upload_file(filename):
         if filename == cur_item['filename']:
             flag = 1
     if not flag:
-        abort(404, f'An authenticated user attempts to access a file that does not exist.')
-    return flask.send_from_directory(insta485.app.config['UPLOAD_FOLDER'],filename)
+        abort(
+            404,
+            f'An authenticated user attempts to \
+                access a file that does not exist.')
+    return flask.send_from_directory(
+        insta485.app.config['UPLOAD_FOLDER'],
+        filename)
+
 
 """ POST /likes/?target=URL """
+
+
 @insta485.app.route('/likes/', methods=['POST'])
 def process_like():
     if 'username' not in flask.session:
@@ -143,7 +166,7 @@ def process_like():
     connection = insta485.model.get_db()
     postid = flask.request.form['postid']
     cur = connection.execute(
-        "SELECT * FROM likes WHERE owner = ? AND postid = ?", 
+        "SELECT * FROM likes WHERE owner = ? AND postid = ?",
         (logname, postid, )
     ).fetchall()
     if operation == "like":
@@ -167,6 +190,8 @@ def process_like():
 
 
 """ POST /comments/?target=URL """
+
+
 @insta485.app.route('/comments/', methods=['POST'])
 def process_comments():
     if 'username' not in flask.session:
@@ -202,6 +227,8 @@ def process_comments():
 
 
 """ POST /posts/?target=URL """
+
+
 @insta485.app.route('/posts/', methods=['POST'])
 def process_submit():
     if 'username' not in flask.session:
@@ -216,10 +243,13 @@ def process_submit():
             abort(400, f'you try to create a post with an empty file.')
         # use uuid
         uuid_basename = insta485.views.account.generate_filename(filename)
-        file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], uuid_basename))
+        file.save(
+            os.path.join(
+                insta485.app.config['UPLOAD_FOLDER'],
+                uuid_basename))
         connection.execute(
-            "INSERT INTO posts(filename, owner) VALUES (?,?)", (uuid_basename, logname)
-        )
+            "INSERT INTO posts(filename, owner) VALUES (?,?)",
+            (uuid_basename, logname))
     elif operation == "delete":
         postid = flask.request.form['postid']
         # if a user tries to delete a post they do not own
@@ -254,5 +284,3 @@ def process_submit():
     if not target:
         target = '/users/' + logname + '/'
     return flask.redirect(target)
-
-

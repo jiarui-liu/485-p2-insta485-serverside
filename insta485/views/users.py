@@ -14,7 +14,7 @@ def context_generator_users(logname, username):
     connection = insta485.model.get_db()
     context = {}
     context["logname"], context["username"] = logname, username
-    
+
     # get fullname
     cur = connection.execute(
         "SELECT fullname FROM users WHERE username=?", (username,)
@@ -23,51 +23,57 @@ def context_generator_users(logname, username):
     if (cur) == 0:
         abort(404, f'You try to access a user that does not exist.')
     context["fullname"] = cur[0]["fullname"]
-    
+
     # get following number
     cur = connection.execute(
         "SELECT username2 FROM following WHERE username1=?", (username, )
     ).fetchall()
     context["following"] = len(cur)
-    
+
     # get follower number
     cur = connection.execute(
         "SELECT username1 FROM following WHERE username2=?", (username,)
     ).fetchall()
     context["followers"] = len(cur)
-    
+
     # get logname_follows_username
     cur = connection.execute(
-        "SELECT * FROM following WHERE username1=? AND username2=?", (logname, username,)
-    ).fetchall()
+        "SELECT * FROM following WHERE username1=? AND username2=?",
+        (logname, username,)).fetchall()
     if len(cur) == 0:
         context["logname_follows_username"] = False
     else:
         context["logname_follows_username"] = True
-        
+
     # get posts information
     posts = connection.execute(
         "SELECT postid, filename FROM posts WHERE owner=?", (username,)
     ).fetchall()
     context["total_posts"] = len(posts)
     context["posts"] = posts
-    
+
     return context
 
+
 """ GET /users/<user_url_slug> """
+
+
 @insta485.app.route('/users/<username>/')
 def user_page(username):
-    # the 'username' below has nothing to do with the passed-in argument <username>
+    # the 'username' below has nothing to do with
+    # the passed-in argument <username>
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     else:
         logname = flask.session['username']
-        context = context_generator_users(logname,username)
+        context = context_generator_users(logname, username)
         return flask.render_template("user.html", **context)
-    
+
 
 """ POST /following/?target=URL """
-@insta485.app.route('/following/',methods=['POST'])
+
+
+@insta485.app.route('/following/', methods=['POST'])
 def operation():
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
@@ -83,10 +89,11 @@ def operation():
         ).fetchall()
         for cur_item in cur:
             if cur_item['username2'] == username:
-                abort(409, f'You try to follow a user that you have already followed')
+                abort(409, f'You try to follow a user \
+                    that you have already followed')
         connection.execute(
-            "INSERT INTO following(username1, username2) VALUES (?,?) ", (logname, username)
-        )
+            "INSERT INTO following(username1, username2) VALUES (?,?) ",
+            (logname, username))
 
     # delete the following pair from the database
     elif operation == "unfollow":
@@ -101,10 +108,9 @@ def operation():
         if not flag:
             abort(409, f'You try to unfollow a user that you do not follow.')
         connection.execute(
-            "DELETE FROM following WHERE username1 = ? AND username2 = ?", (logname, username)
-        )
+            "DELETE FROM following WHERE username1 = ? AND username2 = ?",
+            (logname, username))
     target = flask.request.args.get('target')
     if not target:
         target = '/'
     return flask.redirect(target)
-

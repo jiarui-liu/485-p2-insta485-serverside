@@ -1,14 +1,16 @@
 import flask
 import insta485
 
+
 def explore_generator(logname):
     connection = insta485.model.get_db()
 
     not_following = connection.execute(
         "SELECT username FROM users "
-        "WHERE username NOT IN (SELECT username2 FROM following WHERE username1 = ?) AND username != ?",
-        (logname, logname, )
-    ).fetchall()
+        "WHERE username NOT IN "
+        "(SELECT username2 FROM following WHERE username1 = ?) "
+        "AND username != ?",
+        (logname, logname,)).fetchall()
 
     for user in not_following:
         cur = connection.execute(
@@ -21,6 +23,8 @@ def explore_generator(logname):
 
 
 """ GET /explore/ """
+
+
 @insta485.app.route('/explore/')
 def explore_page():
     if 'username' not in flask.session:

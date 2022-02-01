@@ -120,18 +120,18 @@ def process_accounts():
         password = flask.request.form['password']
         # check empty field
         if not username or not password:
-            abort(400, f'Username or password fields are empty')
+            abort(400, 'Username or password fields are empty')
         cur = connection.execute(
             'SELECT password FROM users WHERE username=?',
             (username,)
         ).fetchall()
         # check username authentication
         if len(cur) == 0:
-            abort(403, f'Incorrect username.')
+            abort(403, 'Incorrect username.')
         correct_password = cur[0]['password']
         # check password hash
         if not check_password_hash(password, correct_password):
-            abort(403, f'Incorrect password.')
+            abort(403, 'Incorrect password.')
             # set a session cookie
         flask.session.clear()
         flask.session['username'] = username
@@ -148,7 +148,7 @@ def process_accounts():
         # check empty field
         if not fullname or not username \
                 or not password or not email or not filename:
-            abort(400, f'Username/password/fullname/email/file is empty.')
+            abort(400, 'Username/password/fullname/email/file is empty.')
         cur = connection.execute(
             "SELECT username FROM users"
         ).fetchall()
@@ -157,7 +157,7 @@ def process_accounts():
             if cur_item['username'] == username:
                 abort(
                     409,
-                    f'You try to create an account with \
+                    'You try to create an account with \
                         an existing username in the database.')
         uuid_basename = generate_filename(filename)
         file.save(
@@ -175,7 +175,7 @@ def process_accounts():
     elif operation == 'delete':
         # check log in
         if 'username' not in flask.session:
-            abort(403, f'You are not logged in.')
+            abort(403, 'You are not logged in.')
         logname = flask.session['username']
         # select this user's posts
         postid_list = connection.execute(
@@ -235,23 +235,23 @@ def process_accounts():
     elif operation == 'update_password':
         # check log in
         if 'username' not in flask.session:
-            abort(403, f'You are not logged in.')
+            abort(403, 'You are not logged in.')
         logname = flask.session['username']
         password = flask.request.form['password']
         new_password1 = flask.request.form['new_password1']
         new_password2 = flask.request.form['new_password2']
         # check empty field
         if not password or not new_password1 or not new_password2:
-            abort(400, f'Password/new_password1/new_password2 is empty.')
+            abort(400, 'Password/new_password1/new_password2 is empty.')
         real_old_password = connection.execute(
             "SELECT password FROM users WHERE username = ?", (logname, )
         ).fetchall()[0]['password']
         # check old password hash
         if not check_password_hash(password, real_old_password):
-            abort(403, f'Incorrect old password')
+            abort(403, 'Incorrect old password')
         # check new password mismatch
         elif new_password1 != new_password2:
-            abort(401, f'Two new passwords mismatch')
+            abort(401, 'Two new passwords mismatch')
         # hash new password
         new_password_hash = generate_password_hash(new_password1)
         # update new password
@@ -265,7 +265,7 @@ def process_accounts():
     elif operation == 'edit_account':
         # check log in
         if 'username' not in flask.session:
-            abort(403, f'You are not logged in.')
+            abort(403, 'You are not logged in.')
         logname = flask.session['username']
         file = flask.request.files['file']
         fullname = flask.request.form['fullname']
@@ -273,7 +273,7 @@ def process_accounts():
         filename = secure_filename(file.filename)
         # check empty field
         if not fullname or not email:
-            abort(400, f'Fullname/email is empty.')
+            abort(400, 'Fullname/email is empty.')
         # whether photo file is included``
         if filename:
             # remove old

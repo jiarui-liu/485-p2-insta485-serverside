@@ -128,7 +128,7 @@ def show_index():
 @insta485.app.route('/uploads/<path:filename>')
 def upload_file(filename):
     if 'username' not in flask.session:
-        abort(403, f'An unauthenticated user attempts to \
+        abort(403, 'An unauthenticated user attempts to \
               access an uploaded file.')
     connection = insta485.model.get_db()
     cur1 = connection.execute(
@@ -147,7 +147,7 @@ def upload_file(filename):
     if not flag:
         abort(
             404,
-            f'An authenticated user attempts to \
+            'An authenticated user attempts to \
                 access a file that does not exist.')
     return flask.send_from_directory(
         insta485.app.config['UPLOAD_FOLDER'],
@@ -171,14 +171,14 @@ def process_like():
     ).fetchall()
     if operation == "like":
         if len(cur) != 0:
-            abort(409, f'You try to like a post that you have already liked')
+            abort(409, 'You try to like a post that you have already liked')
         connection.execute(
             "INSERT INTO likes(owner, postid)  VALUES (?,?)",
             (logname, postid, )
         )
     elif operation == "unlike":
         if len(cur) == 0:
-            abort(409, f'You try to unlike a post that you have not liked')
+            abort(409, 'You try to unlike a post that you have not liked')
         connection.execute(
             "DELETE FROM likes WHERE owner=? AND postid=?",
             (logname, postid, )
@@ -203,7 +203,7 @@ def process_comments():
         postid = flask.request.form['postid']
         text = flask.request.form['text']
         if not text:
-            abort(400, f'You try to create an empty comment.')
+            abort(400, 'You try to create an empty comment.')
         connection.execute(
             "INSERT INTO comments(owner, postid, text) VALUES (?,?,?)",
             (logname, postid, text)
@@ -214,7 +214,7 @@ def process_comments():
             "SELECT owner FROM comments WHERE commentid = ?", (commentid, )
         ).fetchall()[0]['owner']
         if cur != logname:
-            abort(403, f'you try to delete a comment that they do not own.')
+            abort(403, 'you try to delete a comment that they do not own.')
         connection.execute(
             "DELETE FROM comments "
             "WHERE commentid = ?",
@@ -240,7 +240,7 @@ def process_submit():
         file = flask.request.files['file']
         filename = secure_filename(file.filename)
         if not filename:
-            abort(400, f'you try to create a post with an empty file.')
+            abort(400, 'you try to create a post with an empty file.')
         # use uuid
         uuid_basename = insta485.views.account.generate_filename(filename)
         file.save(
@@ -257,7 +257,7 @@ def process_submit():
             "SELECT owner FROM posts WHERE postid = ?", (postid, )
         ).fetchall()[0]['owner']
         if cur != logname:
-            abort(403, f'you try to delete a post that you do not own.')
+            abort(403, 'you try to delete a post that you do not own.')
         # remove image file for postid from filesystem
         filename = connection.execute(
             "SELECT filename FROM posts WHERE postid = ?", (postid, )

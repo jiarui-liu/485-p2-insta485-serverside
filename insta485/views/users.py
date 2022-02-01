@@ -21,7 +21,7 @@ def context_generator_users(logname, username):
     ).fetchall()
     # check username existence
     if (cur) == 0:
-        abort(404, f'You try to access a user that does not exist.')
+        abort(404, 'You try to access a user that does not exist.')
     context["fullname"] = cur[0]["fullname"]
 
     # get following number
@@ -89,7 +89,7 @@ def operation():
         ).fetchall()
         for cur_item in cur:
             if cur_item['username2'] == username:
-                abort(409, f'You try to follow a user \
+                abort(409, 'You try to follow a user \
                     that you have already followed')
         connection.execute(
             "INSERT INTO following(username1, username2) VALUES (?,?) ",
@@ -106,7 +106,7 @@ def operation():
             if cur_item['username2'] == username:
                 flag = 1
         if not flag:
-            abort(409, f'You try to unfollow a user that you do not follow.')
+            abort(409, 'You try to unfollow a user that you do not follow.')
         connection.execute(
             "DELETE FROM following WHERE username1 = ? AND username2 = ?",
             (logname, username))

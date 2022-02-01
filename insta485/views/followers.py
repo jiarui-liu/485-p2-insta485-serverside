@@ -2,6 +2,7 @@ import flask
 import insta485
 from werkzeug.exceptions import abort
 
+""" GET /users/<user_url_slug>/followers/ """
 @insta485.app.route('/users/<username>/followers/')
 def followers_page(username):
     if 'username' not in flask.session:
@@ -14,7 +15,7 @@ def followers_page(username):
     ).fetchall()
     
     # check username existence
-    if cur is None:
+    if len(cur) == 0:
         abort(404, f'You try to access a user that does not exist.')
 
     cur = connection.execute(

@@ -6,11 +6,15 @@ URLs include:
 import flask
 import insta485
 import arrow
+import os
+from werkzeug.utils import secure_filename
+from werkzeug.exceptions import abort
 
 """ generate all posts related to the logname. Namely, users the logname is following and logname itself. """
 def all_posts_generator(connection, logname):
     # query information from post table
     # The following relation is username1 follows username2
+    # the most recent post is at the top
     cur = connection.execute(
         "SELECT * "
         "FROM posts "
@@ -34,8 +38,6 @@ def context_generator_index(logname, postid=None):
     # Connect to database
     connection = insta485.model.get_db()
 
-
-
     if postid is None:
         cur = all_posts_generator(connection, logname)
     else:
@@ -47,11 +49,12 @@ def context_generator_index(logname, postid=None):
     # each post is a dictionary
     for post in posts:
         # add in comments for each post
+        # oldest comment at the top: order by commentid
         cur = connection.execute(
             "SELECT commentid, owner, text "
             "FROM comments "
             "WHERE postid = ?"
-            "ORDER BY created",
+            "ORDER BY commentid",
             (post["postid"],)
         )
         post["comments"] = cur.fetchall()
@@ -85,7 +88,7 @@ def context_generator_index(logname, postid=None):
     # print(posts[0])
     return {"logname": logname, "posts": posts} 
         
-    
+""" GET / """
 @insta485.app.route('/')
 def show_index():
     if 'username' not in flask.session:
@@ -107,13 +110,30 @@ def show_index():
         context = context_generator_index(logname)
         return flask.render_template("index.html", **context)
 
-
+""" GET /uploads/<filename> """
 @insta485.app.route('/uploads/<path:filename>')
 def upload_file(filename):
     if 'username' not in flask.session:
-        return flask.redirect(flask.url_for('log_in_page'))
+        abort(403, f'An unauthenticated user attempts to access an uploaded file.')
+    connection = insta485.model.get_db()
+    cur1 = connection.execute(
+        "SELECT filename FROM posts"
+    ).fetchall()
+    cur2 = connection.execute(
+        "SELECT filename FROM users"
+    ).fetchall()
+    flag = 0
+    for cur_item in cur1:
+        if filename == cur_item['filename']:
+            flag = 1
+    for cur_item in cur2:
+        if filename == cur_item['filename']:
+            flag = 1
+    if not flag:
+        abort(404, f'An authenticated user attempts to access a file that does not exist.')
     return flask.send_from_directory(insta485.app.config['UPLOAD_FOLDER'],filename)
 
+""" POST /likes/?target=URL """
 @insta485.app.route('/likes/', methods=['POST'])
 def process_like():
     if 'username' not in flask.session:
@@ -121,60 +141,118 @@ def process_like():
     logname = flask.session['username']
     operation = flask.request.form['operation']
     connection = insta485.model.get_db()
+    postid = flask.request.form['postid']
+    cur = connection.execute(
+        "SELECT * FROM likes WHERE owner = ? AND postid = ?", 
+        (logname, postid, )
+    ).fetchall()
     if operation == "like":
-        postid = flask.request.form['postid']
+        if len(cur) != 0:
+            abort(409, f'You try to like a post that you have already liked')
         connection.execute(
             "INSERT INTO likes(owner, postid)  VALUES (?,?)",
             (logname, postid, )
         )
     elif operation == "unlike":
-        postid = flask.request.form['postid']
+        if len(cur) == 0:
+            abort(409, f'You try to unlike a post that you have not liked')
         connection.execute(
             "DELETE FROM likes WHERE owner=? AND postid=?",
             (logname, postid, )
         )
     target = flask.request.args.get('target')
-    if target is None:
+    if not target:
         target = '/'
     return flask.redirect(target)
 
-@insta485.app.route('/submit/', methods=['GET','POST'])
+
+""" POST /comments/?target=URL """
+@insta485.app.route('/comments/', methods=['POST'])
+def process_comments():
+    if 'username' not in flask.session:
+        return flask.redirect(flask.url_for('log_in_page'))
+    logname = flask.session['username']
+    operation = flask.request.form['operation']
+    connection = insta485.model.get_db()
+    if operation == "create":
+        postid = flask.request.form['postid']
+        text = flask.request.form['text']
+        if not text:
+            abort(400, f'You try to create an empty comment.')
+        connection.execute(
+            "INSERT INTO comments(owner, postid, text) VALUES (?,?,?)",
+            (logname, postid, text)
+        )
+    elif operation == 'delete':
+        commentid = flask.request.form['commentid']
+        cur = connection.execute(
+            "SELECT owner FROM comments WHERE commentid = ?", (commentid, )
+        ).fetchall()[0]['owner']
+        if cur != logname:
+            abort(403, f'you try to delete a comment that they do not own.')
+        connection.execute(
+            "DELETE FROM comments "
+            "WHERE commentid = ?",
+            (commentid, )
+        )
+    target = flask.request.args.get('target')
+    if not target:
+        target = '/'
+    return flask.redirect(target)
+
+
+""" POST /posts/?target=URL """
+@insta485.app.route('/posts/', methods=['POST'])
 def process_submit():
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
-    if flask.request.method == 'POST':
-        operation = flask.request.form['operation']
-        connection = insta485.model.get_db()
-        if operation == "create":
-            postid = flask.request.form['postid']
-            text = flask.request.form['text']
-            connection.execute(
-                "INSERT INTO comments(owner, postid, text) VALUES (?,?,?)",
-                (logname, postid, text)
-            )
-        elif operation == "delete":
-            delete_comment = 'commentid' in flask.request.form.keys()
-            if not delete_comment:
-                postid = flask.request.form['postid']
-                connection.execute(
-                    "DELETE FROM comments "
-                    "WHERE postid = ?",
-                    (postid, )
-                )
-                connection.execute(
-                    "DELETE FROM posts "
-                    "WHERE postid = ?",
-                    (postid, )
-                )
-            else:
-                commentid = flask.request.form['commentid']
-                connection.execute(
-                    "DELETE FROM comments "
-                    "WHERE commentid = ?",
-                    (commentid, )
-                )
+    operation = flask.request.form['operation']
+    connection = insta485.model.get_db()
+    if operation == 'create':
+        file = flask.request.files['file']
+        filename = secure_filename(file.filename)
+        if not filename:
+            abort(400, f'you try to create a post with an empty file.')
+        # use uuid
+        uuid_basename = insta485.views.account.generate_filename(filename)
+        file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], uuid_basename))
+        connection.execute(
+            "INSERT INTO posts(filename, owner) VALUES (?,?)", (uuid_basename, logname)
+        )
+    elif operation == "delete":
+        postid = flask.request.form['postid']
+        # if a user tries to delete a post they do not own
+        cur = connection.execute(
+            "SELECT owner FROM posts WHERE postid = ?", (postid, )
+        ).fetchall()[0]['owner']
+        if cur != logname:
+            abort(403, f'you try to delete a post that you do not own.')
+        # remove image file for postid from filesystem
+        filename = connection.execute(
+            "SELECT filename FROM posts WHERE postid = ?", (postid, )
+        ).fetchall()[0]['filename']
+        os.remove(os.path.join(insta485.app.config['UPLOAD_FOLDER'], filename))
+        # delete everything in the database related to this post
+        # delete related likes
+        connection.execute(
+            "DELETE FROM likes WHERE postid = ?", (postid, )
+        )
+        # delete related comments
+        connection.execute(
+            "DELETE FROM comments "
+            "WHERE postid = ?",
+            (postid, )
+        )
+        # delete related posts
+        connection.execute(
+            "DELETE FROM posts "
+            "WHERE postid = ?",
+            (postid, )
+        )
     target = flask.request.args.get('target')
+    if not target:
+        target = '/users/' + logname + '/'
     return flask.redirect(target)
 
 

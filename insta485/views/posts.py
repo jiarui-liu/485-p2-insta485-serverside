@@ -7,7 +7,7 @@ URLs include:
 import flask
 import insta485
 
-
+""" GET /posts/<postid_url_slug>/ """
 @insta485.app.route('/posts/<postid>/')
 def posts_page(postid):
     if 'username' not in flask.session:

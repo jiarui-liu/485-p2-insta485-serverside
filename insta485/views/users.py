@@ -7,8 +7,6 @@ URLs include:
 
 import flask
 import insta485
-import os
-from werkzeug.utils import secure_filename
 from werkzeug.exceptions import abort
 
 
@@ -22,7 +20,7 @@ def context_generator_users(logname, username):
         "SELECT fullname FROM users WHERE username=?", (username,)
     ).fetchall()
     # check username existence
-    if cur is None:
+    if (cur) == 0:
         abort(404, f'You try to access a user that does not exist.')
     context["fullname"] = cur[0]["fullname"]
     
@@ -56,7 +54,7 @@ def context_generator_users(logname, username):
     
     return context
 
-
+""" GET /users/<user_url_slug> """
 @insta485.app.route('/users/<username>/')
 def user_page(username):
     # the 'username' below has nothing to do with the passed-in argument <username>
@@ -68,44 +66,45 @@ def user_page(username):
         return flask.render_template("user.html", **context)
     
 
-""" process all kinds of user operations """
-@insta485.app.route('/operation/user/',methods=['GET','POST'])
+""" POST /following/?target=URL """
+@insta485.app.route('/following/',methods=['POST'])
 def operation():
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
-    if flask.request.method == 'POST':
-        operation = flask.request.form['operation']
-        connection = insta485.model.get_db()
+    operation = flask.request.form['operation']
+    connection = insta485.model.get_db()
 
-        # insert the following pair into the database
-        if operation == "follow":
-            username = flask.request.form['username']
-            connection.execute(
-                "INSERT INTO following(username1, username2) VALUES (?,?) ", (logname, username)
-            )
-            target = flask.request.args.get('target')
-            return flask.redirect(target)
+    # insert the following pair into the database
+    if operation == "follow":
+        username = flask.request.form['username']
+        cur = connection.execute(
+            "SELECT username2 FROM following WHERE username1 = ?", (logname, )
+        ).fetchall()
+        for cur_item in cur:
+            if cur_item['username2'] == username:
+                abort(409, f'You try to follow a user that you have already followed')
+        connection.execute(
+            "INSERT INTO following(username1, username2) VALUES (?,?) ", (logname, username)
+        )
 
-        # delete the following pair from the database
-        elif operation == "unfollow":
-            print("unfollow")
-            username = flask.request.form['username']
-            connection.execute(
-                "DELETE FROM following WHERE username1 = ? AND username2 = ?", (logname, username)
-            )
-            target = flask.request.args.get('target')
-            return flask.redirect(target)
+    # delete the following pair from the database
+    elif operation == "unfollow":
+        username = flask.request.form['username']
+        cur = connection.execute(
+            "SELECT username2 FROM following WHERE username1 = ?", (logname, )
+        ).fetchall()
+        flag = 0
+        for cur_item in cur:
+            if cur_item['username2'] == username:
+                flag = 1
+        if not flag:
+            abort(409, f'You try to unfollow a user that you do not follow.')
+        connection.execute(
+            "DELETE FROM following WHERE username1 = ? AND username2 = ?", (logname, username)
+        )
+    target = flask.request.args.get('target')
+    if not target:
+        target = '/'
+    return flask.redirect(target)
 
-        # upload image files
-        elif operation == "create":
-            file = flask.request.files['file']
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(insta485.app.config['UPLOAD_FOLDER'], filename))
-            connection.execute(
-                "INSERT INTO posts(filename, owner) VALUES (?,?)", (filename, logname)
-            )
-            target = flask.request.args.get('target')
-            return flask.redirect(target)
-
-    

@@ -19,6 +19,8 @@ def explore_generator(logname):
 
     return {"logname": logname, "not_following": not_following}
 
+
+""" GET /explore/ """
 @insta485.app.route('/explore/')
 def explore_page():
     if 'username' not in flask.session:

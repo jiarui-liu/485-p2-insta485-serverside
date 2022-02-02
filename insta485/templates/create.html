@@ -1,7 +1,7 @@
 {% extends "login.html" %} {% block body %}
 
 <form
-	action="/accounts/?target=/accounts/login/"
+	action="/accounts/"
 	method="post"
 	enctype="multipart/form-data"
 >
@@ -18,5 +18,6 @@
 	<input type="submit" name="signup" value="sign up" />
 	<input type="hidden" name="operation" value="create" />
 </form>
+<h4>Already have an account? <a href='/accounts/login/'> log in </a></h4>
 
 {% endblock %}

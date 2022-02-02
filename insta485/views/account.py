@@ -2,7 +2,7 @@
 Insta485 account-related pages view.
 
 URLs include:
-/accounts/create/, /accounts/delete/, /accounts/edit/
+/accounts/create/, /accounts/delete/, /accounts/edit/, /accounts/password/
 """
 
 import os
@@ -56,23 +56,17 @@ def check_filename(filename_to_check, filename_hash):
     return filename_to_check == uuid_basename
 
 
-# """ GET /accounts/create/ """
-
-
 @insta485.app.route('/accounts/create/')
 def create_page():
-    """Create page."""
+    """GET /accounts/create/."""
     if 'username' in flask.session:
         return flask.redirect(flask.url_for('edit_page'))
     return flask.render_template('create.html')
 
 
-# """ GET /accounts/delete/ """
-
-
 @insta485.app.route('/accounts/delete/')
 def delete_page():
-    """Delete page."""
+    """GET /accounts/delete/."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -80,12 +74,9 @@ def delete_page():
     return flask.render_template('delete.html', **context)
 
 
-# """ GET /accounts/edit/ """
-
-
 @insta485.app.route('/accounts/edit/')
 def edit_page():
-    """Edit page."""
+    """GET /accounts/edit/."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -100,12 +91,9 @@ def edit_page():
     return flask.render_template('edit.html', **context)
 
 
-# """ GET /accounts/password/ """
-
-
 @insta485.app.route('/accounts/password/')
 def password_page():
-    """Update password."""
+    """GET /accounts/password/."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -113,12 +101,9 @@ def password_page():
     return flask.render_template('password.html', **context)
 
 
-# """ POST /accounts/?target=URL """
-
-
 @insta485.app.route('/accounts/', methods=['POST'])
 def process_accounts():
-    """Account page."""
+    """POST /accounts/?target=URL."""
     operation = flask.request.form['operation']
     connection = insta485.model.get_db()
     # operation: login
@@ -180,6 +165,8 @@ def process_accounts():
             "users(username, fullname, email, filename, password) "
             "VALUES (?, ?, ?, ?, ?)",
             (username, fullname, email, uuid_basename, password_db_string))
+        flask.session.clear()
+        flask.session['username'] = username
     # operation: delete
     elif operation == 'delete':
         # check log in

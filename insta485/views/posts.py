@@ -8,12 +8,10 @@ URLs include:
 import flask
 import insta485
 
-# """ GET /posts/<postid_url_slug>/ """
-
 
 @insta485.app.route('/posts/<postid>/')
 def posts_page(postid):
-    """Generate a page to post.."""
+    """GET /posts/<postid_url_slug>/."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']

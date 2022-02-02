@@ -9,8 +9,6 @@ import flask
 from werkzeug.exceptions import abort
 import insta485
 
-# """ GET /users/<user_url_slug>/following/ """
-
 
 @insta485.app.route('/users/<username>/following/')
 def following_page(username):

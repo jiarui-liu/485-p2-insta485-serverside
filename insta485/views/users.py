@@ -57,12 +57,9 @@ def context_generator_users(logname, username):
     return context
 
 
-# """ GET /users/<user_url_slug> """
-
-
 @insta485.app.route('/users/<username>/')
 def user_page(username):
-    """Username."""
+    """GET /users/<user_url_slug>."""
     # the 'username' below has nothing to do with
     # the passed-in argument <username>
     if 'username' not in flask.session:
@@ -72,12 +69,9 @@ def user_page(username):
     return flask.render_template("user.html", **context)
 
 
-# """ POST /following/?target=URL """
-
-
 @insta485.app.route('/following/', methods=['POST'])
 def operation():
-    """Follow or unfollow."""
+    """POST /following/?target=URL."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']

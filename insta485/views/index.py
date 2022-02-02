@@ -98,9 +98,6 @@ def context_generator_index(logname, postid=None):
     return {"logname": logname, "posts": posts}
 
 
-# """ GET / """
-
-
 @insta485.app.route('/')
 def show_index():
     """GET /."""
@@ -123,12 +120,9 @@ def show_index():
     return flask.render_template("index.html", **context)
 
 
-# """ GET /uploads/<filename> """
-
-
 @insta485.app.route('/uploads/<path:filename>')
 def upload_file(filename):
-    """Upload file with filename."""
+    """GET /uploads/<filename>."""
     if 'username' not in flask.session:
         abort(403, 'An unauthenticated user attempts to \
               access an uploaded file.')
@@ -156,12 +150,9 @@ def upload_file(filename):
         filename)
 
 
-# """ POST /likes/?target=URL """
-
-
 @insta485.app.route('/likes/', methods=['POST'])
 def process_like():
-    """Like button."""
+    """POST /likes/?target=URL."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -192,12 +183,9 @@ def process_like():
     return flask.redirect(target)
 
 
-# """ POST /comments/?target=URL """
-
-
 @insta485.app.route('/comments/', methods=['POST'])
 def process_comments():
-    """User's comment."""
+    """POST /comments/?target=URL."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -230,12 +218,9 @@ def process_comments():
     return flask.redirect(target)
 
 
-# """ POST /posts/?target=URL """
-
-
 @insta485.app.route('/posts/', methods=['POST'])
 def process_submit():
-    """Submit button of comment."""
+    """POST /posts/?target=URL."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']

@@ -62,6 +62,8 @@ def test_accounts_create(client):
     # Flask docs:
     # https://flask.palletsprojects.com/en/1.1.x/reqcontext/#teardown-callbacks
     response = client.get("/")
+    # assert response.status_code == 302
+    # response = client.get("/accounts/login")
     assert response.status_code == 200
 
     # Number of posts and users after adding a user

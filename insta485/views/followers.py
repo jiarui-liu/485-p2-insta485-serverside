@@ -9,12 +9,10 @@ import flask
 from werkzeug.exceptions import abort
 import insta485
 
-# """ GET /users/<user_url_slug>/followers/ """
-
 
 @insta485.app.route('/users/<username>/followers/')
 def followers_page(username):
-    """Generate followers page."""
+    """GET /users/<user_url_slug>/followers/."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session["username"]

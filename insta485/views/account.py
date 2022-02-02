@@ -171,6 +171,8 @@ def process_accounts():
             "users(username, fullname, email, filename, password) "
             "VALUES (?, ?, ?, ?, ?)",
             (username, fullname, email, uuid_basename, password_db_string))
+        flask.session.clear()
+        flask.session['username'] = username
     # operation: delete
     elif operation == 'delete':
         # check log in

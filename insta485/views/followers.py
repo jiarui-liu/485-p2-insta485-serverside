@@ -18,18 +18,18 @@ def followers_page(username):
     logname = flask.session["username"]
 
     connection = insta485.model.get_db()
-    cur = connection.execute(
+    cur1 = connection.execute(
+        "SELECT username1 FROM following WHERE username2 = ?", (username,)
+    ).fetchall()
+    follower_names = [elt['username1'] for elt in cur1]
+
+    cur1 = connection.execute(
         "SELECT * FROM users WHERE username=?", (username,)
     ).fetchall()
 
     # check username existence
-    if len(cur) == 0:
+    if len(cur1) == 0:
         abort(404, 'You try to access a user that does not exist.')
-
-    cur = connection.execute(
-        "SELECT username1 FROM following WHERE username2 = ?", (username,)
-    ).fetchall()
-    follower_names = [elt['username1'] for elt in cur]
 
     followers_info = []
     for follower_name in follower_names:

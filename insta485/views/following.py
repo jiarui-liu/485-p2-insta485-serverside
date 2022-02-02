@@ -19,17 +19,17 @@ def following_page(username):
 
     connection = insta485.model.get_db()
     cur = connection.execute(
+        "SELECT username2 FROM following WHERE username1 = ?", (username,)
+    ).fetchall()
+    following_names = [elt['username2'] for elt in cur]
+
+    cur = connection.execute(
         "SELECT * FROM users WHERE username=?", (username,)
     ).fetchall()
 
     # check username existence
     if len(cur) == 0:
         abort(404, 'You try to access a user that does not exist.')
-
-    cur = connection.execute(
-        "SELECT username2 FROM following WHERE username1 = ?", (username,)
-    ).fetchall()
-    following_names = [elt['username2'] for elt in cur]
 
     following_info = []
     for following_name in following_names:

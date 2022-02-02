@@ -1,21 +1,23 @@
 """
 Insta485 index (main) view.
+
 URLs include:
 /
 """
-import flask
-import insta485
-import arrow
 import os
+import flask
+import arrow
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import abort
+import insta485
 
-""" generate all posts related to the logname.  \
-Namely, users the logname is following and logname itself. """
+
+# generate all posts related to the logname.  \
+# Namely, users the logname is following and logname itself.
 
 
 def all_posts_generator(connection, logname):
-    # query information from post table
+    """Query information from post table."""
     # The following relation is username1 follows username2
     # the most recent post is at the top
     cur = connection.execute(
@@ -29,10 +31,8 @@ def all_posts_generator(connection, logname):
     return cur
 
 
-""" generate a single post specified by postid """
-
-
 def single_posts_generator(connection, postid):
+    """Generate a single post specified by postid."""
     cur = connection.execute(
         "SELECT * "
         "FROM posts "
@@ -43,6 +43,7 @@ def single_posts_generator(connection, postid):
 
 
 def context_generator_index(logname, postid=None):
+    """Generate a context by logname and postid."""
     # Connect to database
     connection = insta485.model.get_db()
 
@@ -97,36 +98,37 @@ def context_generator_index(logname, postid=None):
     return {"logname": logname, "posts": posts}
 
 
-""" GET / """
+# """ GET / """
 
 
 @insta485.app.route('/')
 def show_index():
+    """GET /."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
-    else:
-        logname = flask.session['username']
-        connection = insta485.model.get_db()
-        # check the logname exists in users
-        cur = connection.execute(
-            "SELECT * FROM users "
-            "WHERE username = ?",
-            (logname, )
-        ).fetchall()
-        if len(cur) == 0:
-            flask.session.clear()
-            return flask.redirect(flask.url_for('log_in_page'))
+    logname = flask.session['username']
+    connection = insta485.model.get_db()
+    # check the logname exists in users
+    cur = connection.execute(
+        "SELECT * FROM users "
+        "WHERE username = ?",
+        (logname, )
+    ).fetchall()
+    if len(cur) == 0:
+        flask.session.clear()
+        return flask.redirect(flask.url_for('log_in_page'))
 
-        # generate all posts in the root page /
-        context = context_generator_index(logname)
-        return flask.render_template("index.html", **context)
+    # generate all posts in the root page /
+    context = context_generator_index(logname)
+    return flask.render_template("index.html", **context)
 
 
-""" GET /uploads/<filename> """
+# """ GET /uploads/<filename> """
 
 
 @insta485.app.route('/uploads/<path:filename>')
 def upload_file(filename):
+    """Upload file with filename."""
     if 'username' not in flask.session:
         abort(403, 'An unauthenticated user attempts to \
               access an uploaded file.')
@@ -154,11 +156,12 @@ def upload_file(filename):
         filename)
 
 
-""" POST /likes/?target=URL """
+# """ POST /likes/?target=URL """
 
 
 @insta485.app.route('/likes/', methods=['POST'])
 def process_like():
+    """Like button."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -189,11 +192,12 @@ def process_like():
     return flask.redirect(target)
 
 
-""" POST /comments/?target=URL """
+# """ POST /comments/?target=URL """
 
 
 @insta485.app.route('/comments/', methods=['POST'])
 def process_comments():
+    """User's comment."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -226,11 +230,12 @@ def process_comments():
     return flask.redirect(target)
 
 
-""" POST /posts/?target=URL """
+# """ POST /posts/?target=URL """
 
 
 @insta485.app.route('/posts/', methods=['POST'])
 def process_submit():
+    """Submit button of comment."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']

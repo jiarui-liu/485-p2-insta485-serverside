@@ -1,12 +1,20 @@
-import flask
-import insta485
-from werkzeug.exceptions import abort
+"""
+Insta485 followers page view.
 
-""" GET /users/<user_url_slug>/followers/ """
+URLs include:
+/users/<user_url_slug>/followers/
+"""
+
+import flask
+from werkzeug.exceptions import abort
+import insta485
+
+# """ GET /users/<user_url_slug>/followers/ """
 
 
 @insta485.app.route('/users/<username>/followers/')
 def followers_page(username):
+    """Generate followers page."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session["username"]
@@ -18,7 +26,7 @@ def followers_page(username):
 
     # check username existence
     if len(cur) == 0:
-        abort(404, f'You try to access a user that does not exist.')
+        abort(404, 'You try to access a user that does not exist.')
 
     cur = connection.execute(
         "SELECT username1 FROM following WHERE username2 = ?", (username,)

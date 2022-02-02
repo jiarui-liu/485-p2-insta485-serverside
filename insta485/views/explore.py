@@ -1,8 +1,15 @@
+"""
+Insta485 explore page view.
+
+URLs include:
+/explore/
+"""
 import flask
 import insta485
 
 
 def explore_generator(logname):
+    """Explore page context."""
     connection = insta485.model.get_db()
 
     not_following = connection.execute(
@@ -22,14 +29,14 @@ def explore_generator(logname):
     return {"logname": logname, "not_following": not_following}
 
 
-""" GET /explore/ """
+# """ GET /explore/ """
 
 
 @insta485.app.route('/explore/')
 def explore_page():
+    """GET /explore/."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
-    else:
-        logname = flask.session['username']
-        context = explore_generator(logname)
-        return flask.render_template("explore.html", **context)
+    logname = flask.session['username']
+    context = explore_generator(logname)
+    return flask.render_template("explore.html", **context)

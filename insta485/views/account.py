@@ -1,20 +1,22 @@
 """
 Insta485 account-related pages view.
+
 URLs include:
 /accounts/create/, /accounts/delete/, /accounts/edit/
 """
 
 import os
-import flask
-import insta485
 import pathlib
 import hashlib
 import uuid
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import abort
+import flask
+import insta485
 
 
 def generate_password_hash(password):
+    """Generate password hash."""
     algorithm = 'sha512'
     salt = uuid.uuid4().hex
     hash_obj = hashlib.new(algorithm)
@@ -26,6 +28,7 @@ def generate_password_hash(password):
 
 
 def check_password_hash(password_to_check, password_hash):
+    """Check password hash."""
     salt = password_hash.split('$')[1]
     algorithm = 'sha512'
     hash_obj = hashlib.new(algorithm)
@@ -37,6 +40,7 @@ def check_password_hash(password_to_check, password_hash):
 
 
 def generate_filename(filename):
+    """Generate filename."""
     stem = uuid.uuid4().hex
     suffix = pathlib.Path(filename).suffix
     uuid_basename = f"{stem}{suffix}"
@@ -44,6 +48,7 @@ def generate_filename(filename):
 
 
 def check_filename(filename_to_check, filename_hash):
+    """Check file name."""
     filename_split = os.path.splitext(filename_hash)
     stem = filename_split[0]
     suffix = pathlib.Path(filename_hash).suffix
@@ -51,34 +56,36 @@ def check_filename(filename_to_check, filename_hash):
     return filename_to_check == uuid_basename
 
 
-""" GET /accounts/create/ """
+# """ GET /accounts/create/ """
 
 
 @insta485.app.route('/accounts/create/')
 def create_page():
+    """Create page."""
     if 'username' in flask.session:
         return flask.redirect(flask.url_for('edit_page'))
     return flask.render_template('create.html')
 
 
-""" GET /accounts/delete/ """
+# """ GET /accounts/delete/ """
 
 
 @insta485.app.route('/accounts/delete/')
 def delete_page():
+    """Delete page."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
-    else:
-        logname = flask.session['username']
-        context = {"logname": logname}
+    logname = flask.session['username']
+    context = {"logname": logname}
     return flask.render_template('delete.html', **context)
 
 
-""" GET /accounts/edit/ """
+# """ GET /accounts/edit/ """
 
 
 @insta485.app.route('/accounts/edit/')
 def edit_page():
+    """Edit page."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -93,11 +100,12 @@ def edit_page():
     return flask.render_template('edit.html', **context)
 
 
-""" GET /accounts/password/ """
+# """ GET /accounts/password/ """
 
 
 @insta485.app.route('/accounts/password/')
 def password_page():
+    """Update password."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
@@ -105,11 +113,12 @@ def password_page():
     return flask.render_template('password.html', **context)
 
 
-""" POST /accounts/?target=URL """
+# """ POST /accounts/?target=URL """
 
 
 @insta485.app.route('/accounts/', methods=['POST'])
 def process_accounts():
+    """Account page."""
     operation = flask.request.form['operation']
     connection = insta485.model.get_db()
     # operation: login

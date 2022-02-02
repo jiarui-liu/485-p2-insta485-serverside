@@ -1,16 +1,18 @@
 """
 Insta485 login page view.
+
 URLs include:
 /users/<user_url_slug>/
 """
 
 
 import flask
-import insta485
 from werkzeug.exceptions import abort
+import insta485
 
 
 def context_generator_users(logname, username):
+    """User information."""
     connection = insta485.model.get_db()
     context = {}
     context["logname"], context["username"] = logname, username
@@ -55,34 +57,35 @@ def context_generator_users(logname, username):
     return context
 
 
-""" GET /users/<user_url_slug> """
+# """ GET /users/<user_url_slug> """
 
 
 @insta485.app.route('/users/<username>/')
 def user_page(username):
+    """Username."""
     # the 'username' below has nothing to do with
     # the passed-in argument <username>
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
-    else:
-        logname = flask.session['username']
-        context = context_generator_users(logname, username)
-        return flask.render_template("user.html", **context)
+    logname = flask.session['username']
+    context = context_generator_users(logname, username)
+    return flask.render_template("user.html", **context)
 
 
-""" POST /following/?target=URL """
+# """ POST /following/?target=URL """
 
 
 @insta485.app.route('/following/', methods=['POST'])
 def operation():
+    """Follow or unfollow."""
     if 'username' not in flask.session:
         return flask.redirect(flask.url_for('log_in_page'))
     logname = flask.session['username']
-    operation = flask.request.form['operation']
+    operations = flask.request.form['operation']
     connection = insta485.model.get_db()
 
     # insert the following pair into the database
-    if operation == "follow":
+    if operations == "follow":
         username = flask.request.form['username']
         cur = connection.execute(
             "SELECT username2 FROM following WHERE username1 = ?", (logname, )
@@ -96,7 +99,7 @@ def operation():
             (logname, username))
 
     # delete the following pair from the database
-    elif operation == "unfollow":
+    elif operations == "unfollow":
         username = flask.request.form['username']
         cur = connection.execute(
             "SELECT username2 FROM following WHERE username1 = ?", (logname, )

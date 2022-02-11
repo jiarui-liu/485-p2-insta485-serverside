@@ -4,17 +4,29 @@
 * Connected to ec2-54-164-109-226.compute-1.amazonaws.com (54.164.109.226) port 80 (#0)
 > GET /accounts/login/ HTTP/1.1
 > Host: ec2-54-164-109-226.compute-1.amazonaws.com
+<<<<<<< HEAD
 > User-Agent: curl/7.80.0
+=======
+> User-Agent: curl/7.71.1
+>>>>>>> c3a567f240c24cdb54ecb0b646907e6775a2989a
 > Accept: */*
 > 
 * Mark bundle as not supporting multiuse
 < HTTP/1.1 200 OK
 < Server: nginx/1.18.0 (Ubuntu)
+<<<<<<< HEAD
 < Date: Wed, 02 Feb 2022 02:47:39 GMT
+=======
+< Date: Wed, 02 Feb 2022 05:42:55 GMT
+>>>>>>> c3a567f240c24cdb54ecb0b646907e6775a2989a
 < Content-Type: text/html; charset=utf-8
 < Content-Length: 1175
 < Connection: keep-alive
 < 
 { [1175 bytes data]
+<<<<<<< HEAD
 100  1175  100  1175    0     0   3600      0 --:--:-- --:--:-- --:--:--  3604
+=======
+100  1175  100  1175    0     0  10398      0 --:--:-- --:--:-- --:--:-- 10398
+>>>>>>> c3a567f240c24cdb54ecb0b646907e6775a2989a
 * Connection #0 to host ec2-54-164-109-226.compute-1.amazonaws.com left intact

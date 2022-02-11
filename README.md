@@ -13,15 +13,9 @@
 - [x] /accounts/delete/
 - [x] /accounts/edit/
 - [x] /accounts/password/
-- [ ] Register for autograder
-- [ ] deploy to AWS Server
+- [x] Register for autograder
+- [x] deploy to AWS Server
 
 ### problems solution update:
 - Comment is now ordered by commentid (update: piazza [@1172](https://piazza.com/class/kwzgyay4mpcwl?cid=1172) says it doesn't matter)
 ### Problems or Bugs:
-#### Flask
-- `run pytest -v` to see current bugs
-  - `/accounts/create/` test failed: `assert 302 == 200`
-    - see https://eecs485staff.github.io/p2-insta485-serverside/#testing-2
-  - pydocstyle and pylint test failed
-    - see spec https://eecs485staff.github.io/p2-insta485-serverside/#insta485test-script

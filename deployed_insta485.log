@@ -1,0 +1,20 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying 54.164.109.226:80...
+* Connected to ec2-54-164-109-226.compute-1.amazonaws.com (54.164.109.226) port 80 (#0)
+> GET /accounts/login/ HTTP/1.1
+> Host: ec2-54-164-109-226.compute-1.amazonaws.com
+> User-Agent: curl/7.80.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Wed, 02 Feb 2022 02:47:39 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 1175
+< Connection: keep-alive
+< 
+{ [1175 bytes data]
+100  1175  100  1175    0     0   3600      0 --:--:-- --:--:-- --:--:--  3604
+* Connection #0 to host ec2-54-164-109-226.compute-1.amazonaws.com left intact
